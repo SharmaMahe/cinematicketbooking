@@ -10,19 +10,13 @@ Basic feature of the application should include:
 
     A single web page with the seats displayed in a grid (you could start by a smaller number of seats, maybe 20-30)
 
-    A single web page with the seats displayed in a grid (you could start by a smaller number of seats, maybe 20-30)
     If a seat is available, the user should be asked for their details like name, email ID, etc and send an email to them with a confirmation
 
-    If a seat is available, the user should be asked for their details like name, email ID, etc and send an email to them with a confirmation
     You do not need to gather the payment details
 
-    You do not need to gather the payment details
     Test coverage is ideal
 
-    Test coverage is ideal
-    Full installation instruction must be available via readme.md. Indorse validators need to read these to run and test your code.
-
-    Full installation instruction must be available via readme.md. Indorse validators need to read these to run and test your code.
+    Full installation instruction must be available via readme.md.
 
 ## Prerequisites
     1. 'Go' should be installed on your machine (Min Version : 1.11)
@@ -30,7 +24,7 @@ Basic feature of the application should include:
 
 ## Installation
 	Please follow below instructions :
-	
+
 	1 To get the directory on local machine just run the command : git clone https://github.com/SharmaMahe/cinematicketbooking
 	2.Then go to project directory : cd cinematicketbooking/src/app
 	3 Set the local environment variable GOROOT,GOPATH and PATH variables 
