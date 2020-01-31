@@ -1,0 +1,120 @@
+{{template "base/base.html" .}}
+
+{{define "head"}}
+  <title>Movie Ticket Booking System</title>
+{{end}}
+
+{{define "body"}}
+    <div class="plane tkt-body">
+    <p class="{{.flashClass}}">{{ .message}}</p>
+    <div class="container">
+      <div class="row justify-content-md-center float-right">
+        <div class="col-4">
+          <labbel class="white">Available</labbel>
+          <p class="availableSeatLegend"></p>
+        </div>
+        <div class="col-4">
+          <labbel class="white">Selected</labbel>
+          <p class="selectedSeatLegend"></p>
+        </div>
+        <div class="col-4">
+          <labbel class="white">Booked</labbel>
+          <p class="bookedSeatLegend"></p>
+        </div>
+      </div>
+    </div>
+    <ol class="cabin">
+      <form  action='{{urlfor "MainController.BookSeat"}}' method="post">
+        <div class="form-row form-row-1">
+          <div class="col-md-6 mb-3 pd">
+            <label for="email" class="white">Email</label>
+            <input type="text" class="form-control" id="email" placeholder="Enter Email" name="email" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="name" class="white">Name</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter Name" name="name" required>
+          </div>
+        </div>
+        {{range $key,$value := .seats}}
+        <li class="row row--1">
+          <ol class="seats" type="A">
+            {{range $cvalue := $value}}
+              {{ if $cvalue.Booked }}
+              <li class="seat">
+                <input type="checkbox"  name="seats" value="{{$cvalue.SeatNumber}}" id="{{$cvalue.SeatNumber}}" />
+                <label for="{{$cvalue.SeatNumber}}" class="bookedSeat" onclick="return OpenCancelModal()">{{$cvalue.SeatNumber}}</label>
+              </li>
+              {{else}}
+              <li class="seat">
+                <input type="checkbox" name="seats" value="{{$cvalue.SeatNumber}}" id="{{$cvalue.SeatNumber}}" />
+                <label for="{{$cvalue.SeatNumber}}">{{$cvalue.SeatNumber}}</label>
+              </li>
+              {{end}}
+            {{end}}
+          </ol>
+        </li>
+        {{end}}
+        <button class="btn btn-primary float-right submitBtn" type="submit">Book</button>
+      </form>
+    </ol>
+  </div>
+  <div class="modal fade" tabindex="-1" role="dialog" id="cancelModal">
+    <div class="modal-dialog" role="document">
+      <form  action='{{urlfor "MainController.CancelSeat"}}' method="post" onsubmit="return checkFields()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Cancel Booking</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p class="alert alert-danger d-none" id="ticketMsg">Please select at least one seat</p>
+            <ol>
+              <li>
+                <div class="form-row">
+                  <div class="col-md-6 mb-3">
+                    <label for="email">Email</label>
+                    <input type="text" class="form-control" id="email" placeholder="Enter Email" name="email" required>
+                  </div>
+                </div>
+              </li>
+              <label>Seats:</label>
+            {{range $key,$value := .allBookedSeats }}
+              <li>
+                <input type="checkbox" name="cancelseats" class="cancelseats" value="{{$value.Id}}" id="{{$value.Id}}" /> {{$value.Seat.SeatNumber}}
+              </li>
+            {{end}}
+            </ol>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Cancel Booking</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{{end}}
+{{define "script"}}
+  <script type="text/javascript">
+    function OpenCancelModal() {
+      $("#cancelModal").modal('show');
+    }
+    function checkFields(){
+      var err = false
+      $(".cancelseats").each(function(){
+        if($(this).is(":checked")){
+          err = true
+        }
+      })
+      if(err) {
+        $("#ticketMsg").addClass('d-none')
+      }else{
+        $("#ticketMsg").removeClass('d-none')
+      }
+      return err
+    }
+  </script>
+{{end}}
+
