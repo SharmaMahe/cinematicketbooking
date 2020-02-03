@@ -24,7 +24,8 @@
       </div>
     </div>
     <ol class="cabin">
-      <form  action='{{urlfor "MainController.BookSeat"}}' method="post">
+      <form  action='{{urlfor "MainController.BookSeat"}}' method="post" onsubmit="return checkBookFields()">
+        <p class="alert alert-danger d-none" id="bookTicketMsg">Please select at least one seat</p>
         <div class="form-row form-row-1">
           <div class="col-md-6 mb-3 pd">
             <label for="email" class="white">Email</label>
@@ -46,7 +47,7 @@
               </li>
               {{else}}
               <li class="seat">
-                <input type="checkbox" name="seats" value="{{$cvalue.SeatNumber}}" id="{{$cvalue.SeatNumber}}" />
+                <input type="checkbox" name="seats" class="bookseats" value="{{$cvalue.SeatNumber}}" id="{{$cvalue.SeatNumber}}" />
                 <label for="{{$cvalue.SeatNumber}}">{{$cvalue.SeatNumber}}</label>
               </li>
               {{end}}
@@ -60,7 +61,7 @@
   </div>
   <div class="modal fade" tabindex="-1" role="dialog" id="cancelModal">
     <div class="modal-dialog" role="document">
-      <form  action='{{urlfor "MainController.CancelSeat"}}' method="post" onsubmit="return checkFields()">
+      <form  action='{{urlfor "MainController.CancelSeat"}}' method="post" onsubmit="return checkCancelFields()">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Cancel Booking</h5>
@@ -69,7 +70,7 @@
             </button>
           </div>
           <div class="modal-body">
-            <p class="alert alert-danger d-none" id="ticketMsg">Please select at least one seat</p>
+            <p class="alert alert-danger d-none" id="cancelTicketMsg">Please select at least one seat</p>
             <ol>
               <li>
                 <div class="form-row">
@@ -101,7 +102,7 @@
     function OpenCancelModal() {
       $("#cancelModal").modal('show');
     }
-    function checkFields(){
+    function checkCancelFields(){
       var err = false
       $(".cancelseats").each(function(){
         if($(this).is(":checked")){
@@ -109,9 +110,23 @@
         }
       })
       if(err) {
-        $("#ticketMsg").addClass('d-none')
+        $("#cancelTicketMsg").addClass('d-none')
       }else{
-        $("#ticketMsg").removeClass('d-none')
+        $("#cancelTicketMsg").removeClass('d-none')
+      }
+      return err
+    }
+    function checkBookFields(){
+      var err = false
+      $(".bookseats").each(function(){
+        if($(this).is(":checked")){
+          err = true
+        }
+      })
+      if(err) {
+        $("#bookTicketMsg").addClass('d-none')
+      }else{
+        $("#bookTicketMsg").removeClass('d-none')
       }
       return err
     }

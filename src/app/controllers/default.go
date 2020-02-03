@@ -4,9 +4,12 @@ import (
 	"app/models"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/validation"
 	_"fmt"
 	"math"
 	"strconv"
+	"app/mail"
+	"unicode/utf8"
 )
 
 // init To load the models
@@ -132,49 +135,80 @@ func (c *MainController) BookSeat() {
 		return
 	}
 
-	// Begin transaction
-	o.Begin()
+	valid := validation.Validation{}
+    valid.Required(email, "Email")
+    valid.Required(name, "Name")
+    valid.Required(seats, "Seats")
 
-	// Insert User Record
-	user.Email = email
-	user.Name = name
+	// validate form
+    b := valid.HasErrors()
+ 
+    if !b {
 
-	o.ReadOrCreate(&user, "Email");
+		// Begin transaction
+		o.Begin()
 
-	// Loop through the seats
-	for _,val := range seats{
+		// Insert User Record
+		user.Email = email
+		user.Name = name
 
-		// initialize the bookedSeat model
-		bookedSeat := models.BookedSeat{}
+		o.ReadOrCreate(&user, "Email");
 
-		// Query for seat object
-		seat.SeatNumber = val
-		o.Read(&seat,"SeatNumber");
+		// Loop through the seats
+		for _,val := range seats{
 
-		// Assgn field values
-		bookedSeat.User = &user
-		bookedSeat.Seat = &seat
-		bookedSeat.Status = 1
+			// initialize the bookedSeat model
+			bookedSeat := models.BookedSeat{}
 
-		// Finally insert the record and check if not exist.
-		if created, _, err := o.ReadOrCreate(&bookedSeat, "Seat","Status"); err == nil {
-		    if !created {
-		        o.Rollback();
-			    flash.Error("Seat already booked!")
-    			flash.Store(&c.Controller)
-    			c.Redirect("/", 302)
-    			return
-		    }
+			// Query for seat object
+			seat.SeatNumber = val
+			o.Read(&seat,"SeatNumber");
+
+			// Assgn field values
+			bookedSeat.User = &user
+			bookedSeat.Seat = &seat
+			bookedSeat.Status = 1
+
+			// Finally insert the record and check if not exist.
+			if created, _, err := o.ReadOrCreate(&bookedSeat, "Seat","Status"); err == nil {
+			    if !created {
+			        o.Rollback();
+				    flash.Error("Seat already booked!")
+	    			flash.Store(&c.Controller)
+	    			c.Redirect("/", 302)
+	    			return
+			    }
+			}
 		}
-	}
 
-	// Commit the changes.
-	o.Commit();	
+		// Commit the changes.
+		o.Commit();	
 
-	flash.Success("Your tickets booked successfully!")
-    flash.Store(&c.Controller)
-    c.Redirect("/", 302)
-	return 
+		// Send ticket confirmation
+		go mail.SendBookingMail(name,email,seats)
+
+		msg := "Tickets"
+
+		switch len(seats) {
+			case 1:
+				msg = "Ticket"
+		}
+
+		flash.Success("Your "+msg+" booked successfully!")
+	    flash.Store(&c.Controller)
+	    c.Redirect("/", 302)
+		return 
+    }else{
+    	// validation does not pass
+        var errs string = "";
+        for _, err := range valid.Errors {
+            errs = errs +","+ err.Key+" "+err.Message
+        }
+        flash.Error(trimFirstRune(errs))
+        flash.Store(&c.Controller)
+        c.Redirect("/", 302)
+        return
+    }
 }
 
 // Post ...
@@ -198,6 +232,8 @@ func (c *MainController) CancelSeat() {
 		c.Redirect("/", 302)
 		return
 	}
+
+	cancelledSeats := make([]string,0)
 
 	// Begin transaction
 	o.Begin()
@@ -227,6 +263,10 @@ func (c *MainController) CancelSeat() {
 	    			c.Redirect("/", 302)
 	    			return
 			    }
+			    seat := models.Seat{Id:bookedSeat.Seat.Id}
+			    o.Read(&seat)
+
+			    cancelledSeats = append(cancelledSeats,seat.SeatNumber)
 			}else{
 				o.Rollback();
 				flash.Error("You are not authorized to cancel this booking, please enter correct email id")
@@ -245,6 +285,9 @@ func (c *MainController) CancelSeat() {
 	// Commit the changes.
 	o.Commit();	
 
+	// Send ticket confirmation
+	go mail.SendBookingCancelMail(user.Name,user.Email,cancelledSeats)
+
 	msg := "Tickets"
 
 	switch len(seats) {
@@ -256,4 +299,9 @@ func (c *MainController) CancelSeat() {
     flash.Store(&c.Controller)
     c.Redirect("/", 302)
 	return 
+}
+
+func trimFirstRune(s string) string {
+	_, i := utf8.DecodeRuneInString(s)
+	return s[i:]
 }

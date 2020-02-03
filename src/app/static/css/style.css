@@ -254,3 +254,7 @@ ol {
   border-color: #F42536 !important;
   color: white !important;
 }
+
+#bookTicketMsg{
+  margin-left: -11px;
+}
