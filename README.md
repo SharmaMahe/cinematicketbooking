@@ -28,10 +28,13 @@ Basic feature of the application should include:
 	1 To get the directory on local machine just run the command : git clone https://github.com/SharmaMahe/cinematicketbooking
 	2.Then go to project directory : cd cinematicketbooking/src/app
 	3 Set the local environment variable GOROOT,GOPATH and PATH variables 
-		Hint :
-		export GOROOT : /usr/local/go
-		export GOPATH : {projectcurrentdirectory}
-		export PATH : PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+		i.e 
+		Project is installed/cloned in /var/www directory and 'go' installed in /usr/local
+		then following command will work :
+		export GOROOT=/usr/local/go
+		export GOPATH=/var/www/cinematicketbooking/
+		export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+	note : Above commands for linux environment 
     4 Run "go get github.com/astaxie/beego"
 	5 Run "go get github.com/go-sql-driver/mysql"
 	6 Run "go get github.com/beego/bee"
